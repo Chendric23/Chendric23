@@ -1,53 +1,46 @@
+Dim rowIndex As Integer ' Global olarak tanımlanacak
 Sub ResimSay()
    Dim folderPath As String
-   Dim AWDMARK_VAR_Path As String
-   Dim AWDMARK_YOK_Path As String
-   Dim BACKDOORGNKAMERA_1AD_Path As String
-   Dim BACKDOORGNKAMERA_2AD_Path As String
+   Dim objFSO As Object
    ' Ana klasör yolu
-   folderPath = "C:\resimler\"
-   ' AWDMARK klasörlerinin yolları
-   AWDMARK_VAR_Path = folderPath & "AWDMARK\VAR\"
-   AWDMARK_YOK_Path = folderPath & "AWDMARK\YOK\"
-   ' BACKDOORGNKAMERA klasörlerinin yolları
-   BACKDOORGNKAMERA_1AD_Path = folderPath & "BACKDOORGNKAMERA\1AD+KAPALI\"
-   BACKDOORGNKAMERA_2AD_Path = folderPath & "BACKDOORGNKAMERA\2_Adet\"
-   ' AWDMARK VAR klasöründeki jpg ve html sayısını say
-   Range("C4").Value = DosyaSay(AWDMARK_VAR_Path, "*.jpg")
-   Range("F4").Value = DosyaSay(AWDMARK_VAR_Path, "*.html")
-   ' AWDMARK YOK klasöründeki jpg ve html sayısını say
-   Range("D4").Value = DosyaSay(AWDMARK_YOK_Path, "*.jpg")
-   Range("G4").Value = DosyaSay(AWDMARK_YOK_Path, "*.html")
-   ' BACKDOORGNKAMERA 1AD+KAPALI klasöründeki jpg ve html sayısını say
-   Range("C6").Value = DosyaSay(BACKDOORGNKAMERA_1AD_Path, "*.jpg")
-   Range("F6").Value = DosyaSay(BACKDOORGNKAMERA_1AD_Path, "*.html")
-   ' BACKDOORGNKAMERA 2_Adet klasöründeki jpg ve html sayısını say
-   Range("D6").Value = DosyaSay(BACKDOORGNKAMERA_2AD_Path, "*.jpg")
-   Range("G6").Value = DosyaSay(BACKDOORGNKAMERA_2AD_Path, "*.html")
-End Sub
-Function DosyaSay(folderPath As String, filePattern As String) As Integer
-   
-        Dim objFSO As Object
-        Dim objFolder As Object
-        Dim objFile As Object
-        Dim count As Integer
-        ' File System Object oluştur
-        Set objFSO = CreateObject("Scripting.FileSystemObject")
-        ' Klasörü al
-        On Error Resume Next
-        Set objFolder = objFSO.GetFolder(folderPath)
-        On Error GoTo 0
-        If objFolder Is Nothing Then
-            MsgBox "Klasör bulunamadi: " & folderPath, vbExclamation
-            Exit Function
-   End If
-   ' Dosyaları say
-   count = objFolder.Files.count
+   folderPath = "C:\Resimler"
+   ' File System Object oluştur
+   Set objFSO = CreateObject("Scripting.FileSystemObject")
+   ' Excel tablosuna başlık yaz
+   Sheets("Sheet1").Range("B3").Value = "Klasör Adi"
+   Sheets("Sheet1").Range("C3").Value = "JPG Sayisi"
+   Sheets("Sheet1").Range("D3").Value = "HTML Sayisi"
+   ' Başlangıç satır indeksi
+   rowIndex = 4
+   ' Klasördeki dosya sayılarını al ve yazdır
+   DosyaSayVeYazdir objFSO.GetFolder(folderPath)
    ' Obje belleği temizle
-   Set objFolder = Nothing
-   Set objFile = Nothing
    Set objFSO = Nothing
-   ' Sayıyı döndür
-   DosyaSay = count
-End Function
-
+End Sub
+Sub DosyaSayVeYazdir(objFolder As Object)
+   Dim subFolder As Object
+   Dim objFile As Object
+   Dim countJPG As Integer
+   Dim countHTML As Integer
+   ' Dosya sayıları sıfırla
+   countJPG = 0
+   countHTML = 0
+   ' Sub klasörlerdeki dosya sayılarını al ve yazdır
+   For Each objFile In objFolder.Files
+       If Right(objFile.Name, 4) = ".jpg" Then
+           countJPG = countJPG + 1
+       ElseIf Right(objFile.Name, 5) = ".html" Then
+           countHTML = countHTML + 1
+       End If
+   Next objFile
+   ' Klasör adını yaz
+   Sheets("Sheet1").Range("B" & rowIndex).Value = objFolder.Name
+   ' JPG ve HTML sayılarını yaz
+   Sheets("Sheet1").Range("C" & rowIndex).Value = countJPG
+   Sheets("Sheet1").Range("D" & rowIndex).Value = countHTML
+   ' Alt klasörleri gezerek işlem yap
+   rowIndex = rowIndex + 1
+   For Each subFolder In objFolder.SubFolders
+       DosyaSayVeYazdir subFolder
+   Next subFolder
+End Sub
