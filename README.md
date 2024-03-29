@@ -1,119 +1,66 @@
-Sub DosyaSaydir()
-
-Dim ftpServer As String
-Dim ftpUser As String
-Dim ftpPassword As String
-Dim ftpFolder As String
-Dim dosyaListesi As String
-Dim dosyaListesiArray() As String
-Dim jpegSayacAWDMARK As Integer
-Dim xmlSayacAWDMARK As Integer
-Dim jpegSayacVAR As Integer
-Dim xmlSayacVAR As Integer
-Dim jpegSayacYOK As Integer
-Dim xmlSayacYOK As Integer
-
-
-'ftp sunucu bilgileri
-
-ftpServer = "ftp://10.116.184.104/"
-ftpUser = "qqww001"
-ftpPassword = "3518"
-ftpFolder = "/"
+Sub JPG_Saydir()
  
- 'ftp sunucusundan dosya listesini alma
- dosyaListesi = GetFTPDirectoryListing(ftpServer, ftpUser, ftpPassword, ftpFolder)
-
-'Dosya listesini diziye ayirma
-dosyaListesiArray = Split(dosyaListesi, vbCrLf)
-
-'AWDMARK(RHLHRRDOOR)klasörü içerisindeki JPG ve XML dosyalarini sayma
-
-For Each dosya In dosyaListesiArray
-
-If InStr(dosya, "/AWDMARK/") > 0 Then
-If InStr(dosya, ".jpg") > 0 Then
-
-   jpegSayacAWDMARK = jpegSayacAWDMARK + 1
-   
- ElseIf InStr(dosya, ".xml") > 0 Then
+Dim anaKlasor As String
+Dim anaKlasorler As Variant
+Dim i As Integer
  
- xmlSayacAWDMARK = xmlSayacAWDMARK + 1
+anaKlasorler = Array("AWDMARK", "BACKDOORGNKAMERA")
  
-   
-  End If
+For i = LBound(anaKlasorler) To UBound(anaKlasorler)
  
- End If
+anaKlasor = "C:\Resimler\" & anaKlasorler(i) & "\"
  
- Next dosya
  
- 'Var Klasörü Içerisindeki resimleri sayma
+Cells(3 + i, 4).Value = DosyaSay(anaKlasor, "*.JPG")
  
- For Each dosya In dosyaListesiArray
+If anaKlasorler(i) = "AWDMARK" Then
  
-  If InStr(dosya, "/AWDMARK/VAR/") > 0 Then
-    
-    If InStr(dosya, ".jpg") > 0 Then
-      jpgSayacVAR = jpgSayacVAR + 1
-      
-      ElseIf InStr(dosya, ".xml") > 0 Then
-   xmlSayacVAR = xmlSayacVAR + 1
-    
-    End If
-  End If
-  
+Cells(6, 4).Value = DosyaSay(anaKlasor, "*.HTML")
+ 
+  ElseIf anaKlasorler(i) = "BACKDOORGNKAMERA" Then
+Cells(7, 4).Value = DosyaSay(anaKlasor, ".HTML")
+ 
+Cells(7, 6).Value = DosyaSay(anaKlasor & "1AD+KAPALI\", "*.JPG")
+Cells(7, 9).Value = DosyaSay(anaKlasor & "2_Adet\", "*.JPG")
+ 
+   End If
+Next i
+ 
+ 
+End Sub
+ 
+Function DosyaSay(ByVal klasor As String, ByVal filtre As String) As Integer
+ 
+Dim fs As Object
+Dim dosyalar As Object
+Dim dosya As Object
+Dim altKlasor As Object
+Dim sayac As Integer
+ 
+ 
+Set fs = CreateObject("Scripting.FileSystemObject")
+ 
+On Error Resume Next
+ 
+On Error GoTo 0
+ 
+If Not dosyalar Is Nothing Then
+ 
+For Each dosya In dosyalar
+  If LCase(Right(dosya.Name, 4)) = Right(filtre, 4) Then
+  sayac = sayac + i
+   End If
   Next dosya
-  
-  'YOK klasörü içerisindeki jpg ve xml resimleri
-  
-  
-    
-       For Each dosya In dosyaListesiArray
- 
-  If InStr(dosya, "/AWDMARK/YOK/") > 0 Then
-    
-    If InStr(dosya, ".jpg") > 0 Then
-      jpgSayacYOK = jpgSayacYOK + 1
-      
-      ElseIf InStr(dosya, ".xml") > 0 Then
-   xmlSayacVAR = xmlSayacVAR + 1
-    
-    End If
   End If
+On Error Resume Next
  
- Next dosya
+For Each altKlasor In fs.GetFolder(klasor).SubFolders
+  sayac = sayac + DosyaSay(altKlasor.Path, filtre)
+Next altKlasor
+On Error GoTo 0
+DosyaSay = sayac
+
+
  
-   'sonuclari belirtilen hücrelere yazdir
-   
-   Range("O3").Value = jpgSayacAWDMARK + xmlSayacAWDMARK
-   Range("O5").Value = jpgSayacVAR
-   Range("O6").Value = xmlSayacVAR
-   Range("O7").Value = jpgSayacYOK
-   Range("O8").Value = xmlSayacYOK
-   
-   End Sub
-   
-   
- Function GetFTPDirectoryListing(ByVal server As String, ByVal user As String, ByVal password As String, ByVal folder As String) As String
- 
-Dim ftp As Object
-
-'FTP nesnesi olusturma
-
-Set ftp = CreateObject("WinHttp.WinHttpRequest.5.1")
-
-'ftp sunucusuna baglan
-
-ftp.Open "GET", "ftp://" & qww001 & ":" & 3518 & "Q" & server & folder, False
-ftp.send
-
-'sonuclari döndürün
-
-GetFTPDirectoryLisng = ftp.responseText
-
-
-
 End Function
-
-
 
