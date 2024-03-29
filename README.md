@@ -9,7 +9,7 @@ Sub ResimSay()
    ' Excel tablosuna başlık yaz
    Sheets("Sheet1").Range("B3").Value = "Klasör Adi"
    Sheets("Sheet1").Range("C3").Value = "JPG Sayisi"
-   Sheets("Sheet1").Range("D3").Value = "HTML Sayisi"
+   Sheets("Sheet1").Range("D3").Value = "XML Sayisi"
    ' Başlangıç satır indeksi
    rowIndex = 4
    ' Klasördeki dosya sayılarını al ve yazdır
@@ -29,18 +29,20 @@ Sub DosyaSayVeYazdir(objFolder As Object)
    For Each objFile In objFolder.Files
        If Right(objFile.Name, 4) = ".jpg" Then
            countJPG = countJPG + 1
-       ElseIf Right(objFile.Name, 5) = ".html" Then
+       ElseIf Right(objFile.Name, 5) = ".html" Or Right(objFile.Name, 4) = ".xml" Then
            countHTML = countHTML + 1
        End If
    Next objFile
-   ' Klasör adını yaz
-   Sheets("Sheet1").Range("B" & rowIndex).Value = objFolder.Name
-   ' JPG ve HTML sayılarını yaz
-   Sheets("Sheet1").Range("C" & rowIndex).Value = countJPG
-   Sheets("Sheet1").Range("D" & rowIndex).Value = countHTML
    ' Alt klasörleri gezerek işlem yap
-   rowIndex = rowIndex + 1
    For Each subFolder In objFolder.SubFolders
-       DosyaSayVeYazdir subFolder
+       DosyaSayVeYazdir subFolder ' Alt klasörlerin içindeki dosyaları say
    Next subFolder
+   ' Klasör adını yaz sadece alt klasörleri gezdikten sonra yazılmalı
+   Sheets("Sheet1").Range("B" & rowIndex).Value = objFolder.Path
+   ' JPG sayısını yaz
+   Sheets("Sheet1").Range("C" & rowIndex).Value = countJPG
+   ' HTML sayısını yaz
+   Sheets("Sheet1").Range("D" & rowIndex).Value = countHTML
+   ' Satır indeksini bir artır
+   rowIndex = rowIndex + 1
 End Sub
